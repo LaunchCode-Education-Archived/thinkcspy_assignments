@@ -229,7 +229,7 @@ function filter_table(elem) {
     not_found_message.hidden = !all_rows_hidden;
 }
 </script>
-    <p>Report generated on 27-Apr-2017 at 14:05:48 by<a href="https://pypi.python.org/pypi/pytest-html"> pytest-html</a> v1.14.2</p>
+    <p>Report generated on 27-Apr-2017 at 15:18:20 by<a href="https://pypi.python.org/pypi/pytest-html"> pytest-html</a> v1.14.2</p>
     <h2>Environment</h2>
     <table id="environment">
       <tr>
@@ -248,8 +248,8 @@ function filter_table(elem) {
         <td>Python</td>
         <td>3.6.0</td></tr></table>
     <h2>Summary</h2>
-    <p>12 tests ran in 0.38 seconds. </p>
-    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="passed">11 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="failed">1 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <p>15 tests ran in 0.25 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="passed">10 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="failed">5 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
     <h2>Results</h2>
     <table id="results-table">
       <thead id="results-table-head">
@@ -268,16 +268,43 @@ function filter_table(elem) {
           <td class="col-duration">0.00</td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="log">self = &lt;Chapter_03.test_solution.TestChapter03 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;           self.assertEqual(hello(), &quot;Hello Chris&quot;) # this should fail<br/><span class="error">E           AssertionError: &#x27;Hello world&#x27; != &#x27;Hello Chris&#x27;</span><br/><span class="error">E           - Hello world</span><br/><span class="error">E           + Hello Chris</span><br/><br/>Chapter_03\test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
-      <tbody class="passed results-table-row">
+            <div class="log">self = &lt;Chapter_03.test_solution.TestChapter03 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(calculate_temp(49), 89)<br/><span class="error">E       AssertionError: 9 != 89</span><br/><br/>Chapter_03\test_solution.py:8: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
         <tr>
           <td>Chapter_03</td>
-          <td class="col-result">Passed</td>
-          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution2</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_2</td>
           <td class="col-duration">0.00</td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="empty log">No log output captured.</div></td></tr></tbody>
+            <div class="log">self = &lt;Chapter_03.test_solution.TestChapter03 testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(calculate_temp(50), 40)<br/><span class="error">E       AssertionError: 9 != 40</span><br/><br/>Chapter_03\test_solution.py:11: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;Chapter_03.test_solution.TestChapter03 testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(calculate_temp(0), 40)<br/><span class="error">E       AssertionError: 9 != 40</span><br/><br/>Chapter_03\test_solution.py:14: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;Chapter_03.test_solution.TestChapter03 testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(calculate_temp(201), 41)<br/><span class="error">E       AssertionError: 9 != 41</span><br/><br/>Chapter_03\test_solution.py:17: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_5</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;Chapter_03.test_solution.TestChapter03 testMethod=test_solution_5&gt;<br/><br/>    def test_solution_5(self):<br/>&gt;       self.assertEqual(calculate_temp(-1), 89)<br/><span class="error">E       AssertionError: 9 != 89</span><br/><br/>Chapter_03\test_solution.py:20: AssertionError<br/></div></td></tr></tbody>
       <tbody class="passed results-table-row">
         <tr>
           <td>Chapter_04</td>

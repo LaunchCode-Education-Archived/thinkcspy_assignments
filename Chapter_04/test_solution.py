@@ -1,10 +1,10 @@
-from .solution import hello
+from .solution import square
 import unittest
 
 class TestChapter04(unittest.TestCase):
 
     def test_solution(self):
-    	self.assertEqual(hello(), "Hello world") # this should succeed
+    	self.assertEqual(square([2, 3, 4, 6, 9, 10, 15, 20]), [4, 9, 16, 36, 81, 100, 225, 400])
 
     		
     	

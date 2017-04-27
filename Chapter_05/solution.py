@@ -1,5 +1,3 @@
-def hello():
-    return "Hello world"
-
-if __name__ == '__main__':
-    print(hello())
+def area_of_circle(r):
+# TODO implement your function to return the area of a circle whose radius is r
+	return

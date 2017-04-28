@@ -1,5 +1,7 @@
-def hello():
-    return "Hello world"
+def mirror(text):
 
-if __name__ == '__main__':
-    print(hello())
+    return 
+
+def reverse(text):
+
+    return 

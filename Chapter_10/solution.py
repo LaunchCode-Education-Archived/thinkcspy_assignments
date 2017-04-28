@@ -1,5 +1,3 @@
-def hello():
-    return "Hello world"
+def find_average(nums):
 
-if __name__ == '__main__':
-    print(hello())
+    return 

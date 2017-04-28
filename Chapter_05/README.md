@@ -1,5 +1,4 @@
-Weekly Graded Assignment Instructions
--------------------------------------
+# Weekly Graded Assignment Instructions
 
 Write a function area_of_circle(r) which returns the area of a circle of radius r
 

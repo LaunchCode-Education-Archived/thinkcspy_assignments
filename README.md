@@ -1,6 +1,5 @@
-Thinkcspy Assignments
----------------------
+# Thinkcspy Assignments
 
-Set Up Instructions
-====================
+## Set Up Instructions
+
 

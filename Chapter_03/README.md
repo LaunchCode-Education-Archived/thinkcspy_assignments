@@ -1,5 +1,5 @@
-Weekly Graded Assignment Instructions
--------------------------------------
+# Weekly Graded Assignment Instructions
+
 This is a tricky one!
 
 You have a thermostat that allows you to set the room to any temperature between 40 and 89 degrees.

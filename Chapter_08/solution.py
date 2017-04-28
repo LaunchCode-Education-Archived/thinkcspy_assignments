@@ -1,5 +1,4 @@
-def hello():
-    return "Hello world"
+def analyze_text(text):
+  
+    return 
 
-if __name__ == '__main__':
-    print(hello())

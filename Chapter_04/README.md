@@ -1,5 +1,4 @@
-Weekly Graded Assignment Instructions
--------------------------------------
+# Weekly Graded Assignment Instructions
 
 You are given a list of numbers and need to return a list containing the squares for each of those numbers.
 

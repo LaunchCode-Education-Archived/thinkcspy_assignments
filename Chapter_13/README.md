@@ -1,6 +1,6 @@
 # Weekly Graded Assignment Instructions
 
-The starter code in this chapter's ``solution.py`` contains a ``Point`` class with a ``method slope_from_origin``, which should return the slope of the line joining the origin to the point. For example,
+The starter code in this chapter's ``solution.py`` contains a ``Point`` class with a method ``slope_from_origin``, which should return the slope of the line joining the origin to the point. For example,
 
 ````nohighlight
 >>> Point(4, 10).slope_from_origin()

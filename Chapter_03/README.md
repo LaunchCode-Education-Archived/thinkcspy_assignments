@@ -10,7 +10,7 @@ Here is the start of a program that calculates the temperature based on how much
 
 Here is an example of how your program should behave (When you see >>>, that line represents what the user is typing in):
 
-````nohighlight
+```nohighlight
 By how many clicks has the dial been turned?
 >>> 0
 The temperature is 40
@@ -34,4 +34,4 @@ The temperature is 41
 By how many clicks has the dial been turned?
 >>> -1
 The temperature is 89
-````
+```

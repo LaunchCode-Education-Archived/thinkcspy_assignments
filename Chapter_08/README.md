@@ -4,13 +4,13 @@ Write a function ``analyze_text`` that receives a string as input. Your function
 
 Your function should return an analysis of the text, something like this:
 
-````nohighlight
+```nohighlight
 The text contains 240 alphabetic characters, of which 105 (43.75%) are ‘e’.
-````
+```
 
 You will need to make use of the ``isalpha`` function, which can be used like this
 
-````nohighlight
+```nohighlight
 "a".isalpha() # => evaluates to True
 "3".isalpha() # => evaluates to False
 "&".isalpha() # => False
@@ -18,4 +18,4 @@ You will need to make use of the ``isalpha`` function, which can be used like th
 
 mystr = "Q"
 mystr.isalpha() # => True
-````
+```

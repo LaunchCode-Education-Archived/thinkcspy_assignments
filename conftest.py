@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.optionalhook
 def pytest_html_results_table_header(cells):
-    cells.insert(0, html.th('Chapter'))
+    cells.insert(0, html.th('Chapter', class_='sortable', col='chapter'))
     cells.pop()
 
 @pytest.mark.optionalhook

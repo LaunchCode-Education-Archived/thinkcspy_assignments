@@ -21,7 +21,7 @@ You can test your code as you have for the other assignments, by using ``pytest`
 
 ## Phase Two: Make It Interactive
 
-Once your code passes the tests in ``test_solution.py``, you can move on to the next phase of the assignment: getting input from a user and printing output. To do this, add an input statement that queries the user for his or her name and a print statement that prints out the user's initials. Once you have added the input and print statements, you can test your code by running the program from the command line by entering ``python solution.py`` while in this directory. Your program should now work like this: 
+Once your code passes the tests in ``test_solution.py``, you can move on to the next phase of the assignment: getting input from a user and printing output. To do this, add an ``input`` statement that queries the user for his or her name and a ``print`` statement that prints out the user's initials. Once you have added the ``input`` and ``print`` statements, you can test your code by running the program from the command line by entering ``python solution.py`` while in this directory. Your program should now work like this: 
 
 ```nohighlight
 $ python solution.py
@@ -86,7 +86,8 @@ if __name__ == '__main__':
 In effect, that conditional says:
 
 > “If this is actually the main program that is being run, then go ahead and execute the main function. Otherwise, if this file is being imported, or something else is going on, then stay quiet and do nothing.”
-> *Note:* If you are curious about the ``if __name__ == '__main__':`` conditional, you can check out [this Stack Overflow post](http://stackoverflow.com/questions/419163/what-does-if-name-main-do#419185).
+
+> **Note:** If you are curious about the ``if __name__ == '__main__':`` conditional, you can check out this [Stack Overflow post](http://stackoverflow.com/questions/419163/what-does-if-name-main-do#419185).
 
 Now we are good to go! The program works normally when run directly from the command-line, but if some other file imports it, the main function will not execute.
 

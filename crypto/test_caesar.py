@@ -1,11 +1,9 @@
-# from .vigenere import encrypt
-# from .caesar import encrypt
-# Test Part 3 of Crypto assignment.
-import .caesar, .vigenere
+# Test Part 1 of Crypto assignment.
+from .caesar import alphabet_position, rotate_character, encrypt
 import unittest
 
 
-class TestCrypto(unittest.TestCase):
+class TestCaesar(unittest.TestCase):
 
     def test_solution(self):
         self.assertEqual() 
@@ -21,6 +19,3 @@ class TestCrypto(unittest.TestCase):
 
     def test_solution_5(self):
         self.assertEqual()
-
-
-    	

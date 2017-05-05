@@ -27,9 +27,9 @@ The process for doing your homework for each chapter is:
 
 6. When your code passes all the tests, then you are ready to "grade" your assignment. Here is the process: 
 
-* ``cd`` into the repository's base directory (where all the chapter folders live)
-* run the command ``pytest --html=report.html`` (and be sure NOT to put spaces around the ``=`` sign). Note that the tests from **ALL** chapters will be run, so don't panic if you see that a lot of tests failed. This is because you have not solved them yet! 
-* check ``report.html`` and make sure that all the tests for the chapter you are working on, and those of previous chapters, have passed.  
+    * ``cd`` into the repository's base directory (where all the chapter folders live)
+    * run the command ``pytest --html=report.html`` (and be sure NOT to put spaces around the ``=`` sign). Note that the tests from **ALL** chapters will be run, so don't panic if you see that a lot of tests failed. This is because you have not solved them yet! 
+    * check ``report.html`` and make sure that all the tests for the chapter you are working on, and those of previous chapters, have passed.  
 
 In order to view ``report.html`` online and show it to your T.A., you'll need to do the following steps.  
 
@@ -37,11 +37,11 @@ In order to view ``report.html`` online and show it to your T.A., you'll need to
 
 8. *This step only needs to be done once!* 
 
-* Go to your thinkcspy_assignments repository on GitHub, then click into the ``report.html`` file.  
-* Copy the url address for this page.  
-* Go to [RawGit](http://rawgit.com/) and paste the url address into the input field in the center.  
-* Then copy the address that appears under the heading "Use this URL for development". You will paste that address into the browser bar and go to that address to see your test report. You should bookmark this page to keep it handy. It will automatically update to show the latest ``report.html`` that you push into your GitHub repo. 
-* After you've done this once, you can skip this step and go to the next for future assignments. 
+    * Go to your thinkcspy_assignments repository on GitHub, then click into the ``report.html`` file.  
+    * Copy the url address for this page.  
+    * Go to [RawGit](http://rawgit.com/) and paste the url address into the input field in the center.  
+    * Then copy the address that appears under the heading "Use this URL for development". You will paste that address into the browser bar and go to that address to see your test report. *You should bookmark this page to keep it handy.* It will automatically update to show the latest ``report.html`` that you push into your GitHub repo. 
+    * After you've done this once, you can skip this step and go to the next for future assignments. 
 
 9. Show your ``report.html`` to your T.A. by going to the RawGit address for your report page.  
 

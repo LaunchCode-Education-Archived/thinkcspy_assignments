@@ -15,15 +15,36 @@ The repository ``thinkcspy_assignments`` should be in your GitHub account at thi
 
 The process for doing your homework for each chapter is:  
 
-1. Look at the "Weekly Graded Assignment Instructions" in the README.md for that chapter. There will occasionally be differences between the book's assignment instructions and the instructions in your repository. When there is a difference, **always** follow the repository instructions over the book's. 
-2. Open up the chapter's folder in your text editor and view the ``solution.py`` file. This file contains the code stub that you will start working with. You will put the rest of the code needed to solve the assignment in this file. When you feel ready to test your code, take the next step. 
-3. Open git bash or a terminal window and ``cd`` into your repository directory, and then into this chapter's folder. 
-4. Run the command ``pytest``. You will see a printout of results from the tests executed for this chapter's assignment. If any of the tests failed, you know that you need to go back and fix or expand your code so that all the tests pass. 
-5. It may be helpful to look at the ``test_solution.py`` file to see what kind of tests your code needs to pass. 
-6. When your code passes all the tests, then you are ready to "grade" your assignment. What that means is that you will ``cd`` into the repository's base directory (where all the chapter folders live), and then you will run the command ``pytest --html=report.html``. Note that the tests from **ALL** chapters will be run, so don't panic if you see that a lot of tests failed. This is because you have not solved them yet! You only need to check ``report.html`` and make sure that all the tests for the chapter you are working on, and those of previous chapters, have passed. In order to view ``report.html`` online and show it to your T.A., you'll need to do the following steps. 
-7. Add and commit your changes, then push your repository to GitHub.
-8. *This step only needs to be done once!* Go to GitHub and go to this repository, then click into the ``report.html`` file. Copy the url address for this page. Next, go to [RawGit](http://rawgit.com/) and paste the url address into the input field in the center. Then copy the address that appears under the heading "Use this URL for development". You will paste that address into the browser bar and go to that address to see your test report. You should bookmark this page to keep it handy. It will automatically update to show the latest ``report.html`` that you push into your GitHub repo. After you've done this once, you can skip this step and go to the next for future assignments. 
-9. Show your ``report.html`` to your T.A. by going to the RawGit address for your report page. 
+1. Look at the "Weekly Graded Assignment Instructions" in the README.md for that chapter. There will occasionally be differences between the book's assignment instructions and the instructions in your repository. When there is a difference, **always** follow the repository instructions over the book's.  
+
+2. Open up the chapter's folder in your text editor and view the ``solution.py`` file. This file contains the code stub that you will start working with. You will put the rest of the code needed to solve the assignment in this file. When you feel ready to test your code, take the next step.  
+
+3. Open git bash or a terminal window and ``cd`` into your repository directory, and then into this chapter's folder.  
+
+4. Run the command ``pytest``. You will see a printout of results from the tests executed for this chapter's assignment. If any of the tests failed, you know that you need to go back and fix or expand your code so that all the tests pass.  
+
+5. It may be helpful to look at the ``test_solution.py`` file to see what kind of tests your code needs to pass.  
+
+6. When your code passes all the tests, then you are ready to "grade" your assignment. Here is the process: 
+
+* ``cd`` into the repository's base directory (where all the chapter folders live)
+* run the command ``pytest --html=report.html`` (and be sure NOT to put spaces around the ``=`` sign). Note that the tests from **ALL** chapters will be run, so don't panic if you see that a lot of tests failed. This is because you have not solved them yet! 
+* check ``report.html`` and make sure that all the tests for the chapter you are working on, and those of previous chapters, have passed.  
+
+In order to view ``report.html`` online and show it to your T.A., you'll need to do the following steps.  
+
+7. Add and commit your changes, then push your repository to GitHub.  
+
+8. *This step only needs to be done once!* 
+
+* Go to your thinkcspy_assignments repository on GitHub, then click into the ``report.html`` file.  
+* Copy the url address for this page.  
+* Go to [RawGit](http://rawgit.com/) and paste the url address into the input field in the center.  
+* Then copy the address that appears under the heading "Use this URL for development". You will paste that address into the browser bar and go to that address to see your test report. You should bookmark this page to keep it handy. It will automatically update to show the latest ``report.html`` that you push into your GitHub repo. 
+* After you've done this once, you can skip this step and go to the next for future assignments. 
+
+9. Show your ``report.html`` to your T.A. by going to the RawGit address for your report page.  
+
 10. Bask in the glow of a job well done!
 
 ## Python Style Tips  

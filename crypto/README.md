@@ -11,7 +11,7 @@ This assignment consists of 4 parts:
 
 ## Setup
 
-For this assignment, your folder will look a little different from the previous exercises. Inside this directory are three Python files that replace the usual ``solution.py`` file: ``caesar.py``, ``vigenere.py``, ``helpers.py``. In Part 1, you'll add code to the ``caesar.py`` file. In Part 2, you'll add code to the ``vigenere.py`` file. And in Part 3, you'll add code to the ``helpers.py`` file. You can run the unit tests for this assignment with the ``pytest`` command at any time in this process. And by looking at either the ``test_caesar.py`` or ``test_vigenere.py`` file after you get the terminal message on which tests failed, you can see exactly which functions were being tested in each unit test, and therefore determine where your code needs to be corrected. 
+Your folder for this assignment will look a little different from the previous exercises. Inside this directory are three Python files that replace the usual ``solution.py`` file: ``caesar.py``, ``vigenere.py``, ``helpers.py``. In Part 1, you'll add code to the ``caesar.py`` file. In Part 2, you'll add code to the ``vigenere.py`` file. And in Part 3, you'll add code to the ``helpers.py`` file. You can run the unit tests for this assignment with the ``pytest`` command at any time in this process. And by looking at either the ``test_caesar.py`` or ``test_vigenere.py`` file after you get the terminal message on which tests failed, you can see exactly which functions were being tested in each unit test, and therefore determine where your code needs to be corrected. 
 
 > **Note:** You will not pass all unit tests until you have finished Part 2. But you should wait to run ``pytest --html=report.html`` until you have completed Part 3. At that point, if you pass all the tests, you can push your repo to GitHub with the new, complete, ``report.html``.
 
@@ -21,7 +21,8 @@ Now it’s time for some encryption!
 
 In Chapter 9, you might have worked on an exercise that asked you write a function called ``rot13``, which used the [Caesar Cipher](https://en.wikipedia.org/wiki/Caesar_cipher#History_and_usage) to encrypt a message. If you need a refresher, this is what the exercise said:
 
-> Write a function called ``rot13`` that uses the Caesar cipher to encrypt a message. The Caesar cipher works like a substitution cipher but each character is replaced by the character 13 characters to "its right" in the alphabet. So for example the letter a becomes the letter n. If a letter is past the middle of the alphabet then the counting wraps around to the letter a again, so n becomes a, o becomes b and so on. *Hint:* Whenever you talk about things wrapping around its a good idea to think of modulo arithmetic.
+> Write a function called ``rot13`` that uses the Caesar cipher to encrypt a message. The Caesar cipher works like a substitution cipher but each character is replaced by the character 13 characters to "its right" in the alphabet. So for example the letter a becomes the letter n. If a letter is past the middle of the alphabet then the counting wraps around to the letter a again, so n becomes a, o becomes b and so on.
+> *Hint:* Whenever you talk about things wrapping around its a good idea to think of modulo arithmetic.
 
 The idea is to iterate over the message character by character, rotating each letter 13 places to the right. So for example:
 
@@ -101,7 +102,7 @@ Here are some example input values, with the corresponding return values.
 > You should make use of your own alphabet_position function! If feeling confused, you may want to re-read about how [Functions Can Call Other Functions](https://runestone.launchcode.org/runestone/static/thinkcspy/Functions/Functionscancallotherfunctions.html)
 
 > **Warning**  
-> Once again, before moving on to the next stage, make sure to run the unit tests and make sure that all tests for this function are passing.
+> Once again, before moving on to the next stage, make sure to run the unit tests and make sure that all tests for this function pass.
 
 ### encrypt
 
@@ -245,7 +246,7 @@ If a function is only defined in one place, a particular file somewhere, then ho
 
 ```python
 from helpers import alphabet_position, rotate_character
-"""This says that we want to import code from a module helpers, but that we only want to import 
+"""This says that we want to import code from a module named helpers, but that we only want to import 
 particular pieces of that module, specificially the functions alphabet_position and rotate_character. 
 Note that this works because caesar.py is in the same directory as helpers.py"""
 ```
@@ -257,6 +258,8 @@ Now we should be able to use those functions! Try running python ``caesar.py`` a
 Once you have Caesar working, do the same thing in ``vigenere.py``: simply delete the two helper functions, and import them from ``helpers.py``.
 
 Now your helper functions are defined only once, and your code remains nice and DRY (Don’t Repeat Yourself)!
+
+At this point, go ahead and run ``pytest --html=report.html`` and check that all tests are passing. Then add and commit your changes and push to GitHub.
 
 ## Part 4: Bonus Missions
 

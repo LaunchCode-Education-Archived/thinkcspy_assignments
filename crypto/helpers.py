@@ -6,9 +6,4 @@ def alphabet_position(letter):
 def rotate_character(char, rot):
 # TODO implement your function 
 
-    return 
-
-def encrypt():
-# TODO implement your function 
-
     return

@@ -11,9 +11,19 @@ This assignment consists of 4 parts:
 
 ## Setup
 
-Your folder for this assignment will look a little different from the previous exercises. Inside this directory are three Python files that replace the usual ``solution.py`` file: ``caesar.py``, ``vigenere.py``, ``helpers.py``. In Part 1, you'll add code to the ``caesar.py`` file. In Part 2, you'll add code to the ``vigenere.py`` file. And in Part 3, you'll add code to the ``helpers.py`` file. You can run the unit tests for this assignment with the ``pytest`` command at any time in this process. And by looking at either the ``test_caesar.py`` or ``test_vigenere.py`` file after you get the terminal message on which tests failed, you can see exactly which functions were being tested in each unit test, and therefore determine where your code needs to be corrected. 
+Your folder for this assignment will look a little different from the previous exercises. Inside this directory are five Python files that replace the usual ``solution.py`` file: ``caesar.py``, ``vigenere.py``, ``helpers.py``, ``caesar_final.py``, and ``vigenere_final.py``. They will be used as follows: 
+* In Part 1, you'll add code to the ``caesar.py`` file. 
+* In Part 2, you'll add code to the ``vigenere.py`` file. 
+* In Part 3, you'll add code to the ``helpers.py``, ``caesar_final.py``, and ``vigenere_final.py`` files. 
 
-> **Note:** You will not pass all unit tests until you have finished Part 2. But you should wait to run ``pytest --html=report.html`` until you have completed Part 3. At that point, if you pass all the tests, you can push your repo to GitHub with the new, complete, ``report.html``.
+You can run the unit tests for this assignment with the ``pytest`` command at any time in this process. You should pass all of the tests in the test files listed below at the following stages:
+* At the end of Part 1, pass tests in ``test_caesar.py``.
+* At the end of Part 2, pass tests in ``test_vigenere.py``. 
+* At the end of Part 3, pass tests in ``test_crypto.py``.  
+
+> **Note:** After running ``pytest`` you should look at the terminal message to see which tests in which test files failed, then you can go to the relevant file(s) and see exactly which functions were being tested in each unit test, and therefore determine where your code needs to be corrected.  
+
+> **Note:** You will not pass ALL unit tests for this assignment until you have finished Part 3. That is when you should run ``pytest --html=report.html``. At that point, if you pass all the tests, you can push your repo to GitHub with the new, complete, ``report.html``.
 
 ## Part 1: Caesar
 
@@ -74,7 +84,7 @@ Here are some example input parameter values, with the corresponding return valu
 > **Note:** You can assume that your input will definitely be a letter. Don’t worry about what might happen if somebody tries to use your function with an input parameter that is something other than a single letter, like ``alphabet_position("grandpa22!")``
 
 > **Warning**  
->It is important that you test your function to make sure it works **before moving on**. This practice of testing each little piece of your code in isolation before trying to put all the pieces together will save you a lot of time and headaches. Pay attention to which tests it passes and which it fails when you run ``pytest``. As long as it passes the unit tests for this function, you're okay to move on!
+>It is important that you test your function to make sure it works **before moving on**. This practice of testing each little piece of your code in isolation before trying to put all the pieces together will save you a lot of time and headaches. Pay attention to which tests it passes and which it fails when you run ``pytest``. As long as it passes the unit tests for this function in the relevant test file, you're okay to move on!
 
 ### rotate_character
 Next, write another helper function ``rotate_character(char, rot)`` which receives a character ``char`` (that is, a string of length 1), and an integer ``rot``. Your function should return a new string of length 1, the result of rotating ``char`` by ``rot`` number of places to the right.
@@ -125,7 +135,7 @@ Here are some example input values, with the corresponding return values:
 > You should make use of your own ``rotate_character`` function (which should make it very easy to satisfy the condition above).
 
 > **Warning**  
-> Don’t forget to test! At this point, your code should pass all the tests in ``test_caesar.py``, though it will still fail those in ``test_vigenere.py``; don't worry, that won't be the case for long!
+> Don’t forget to test! At this point, your code should pass all the tests in ``test_caesar.py``, though it will still fail those in ``test_vigenere.py`` and ``test_crypto.py``; don't worry, that won't be the case for long!
 
 ### Make It Interactive
 
@@ -215,7 +225,7 @@ Now that you have your helper functions, go ahead and write a new version of the
 
 Your first step is to figure out what the function signature should say. How should it be different from the Caesar version, ``def encrypt(text, rot)``?
 
-As usual, don’t move on until you have run ``pytest`` for this directory. At this point, your code should pass **all** the tests before moving on.
+As usual, don’t move on until you have run ``pytest`` for this directory. At this point, your code should pass all the tests in both ``test_caesar.py`` and ``test_vigenere.py`` before moving on.
 
 ### Make It Interactive
 
@@ -241,25 +251,26 @@ The reason that copy / pasting is a bad idea is that now you have two copies of 
 If a function is only defined in one place, a particular file somewhere, then how can some other file use it? It is actually quite easy: the other file simply needs to import the function. You have already used the ``import`` keyword throughout this course, whenever you wanted to access code written by other people, such as the ``math`` and ``random`` modules. It is also possible to create and import your own code. Here’s how:
 
 1. In your editor, open the file called ``helpers.py``. Paste both helper functions, ``alphabet_position`` and ``rotate_character`` into this new file.
-2. Next, open up ``caesar.py``, and delete both of those functions.
-3. Finally, add this line to the top of ``caesar.py``:
+2. Next, open up ``caesar_final.py``, and paste **only** your ``encrypt`` method from ``caesar.py``.
+3. Finally, add this line to the top of ``caesar_final.py``:
 
 ```python
-from helpers import alphabet_position, rotate_character
+from .helpers import alphabet_position, rotate_character
+
 """This says that we want to import code from a module named helpers, but that we only want to import 
 particular pieces of that module, specificially the functions alphabet_position and rotate_character. 
-Note that this works because caesar.py is in the same directory as helpers.py"""
+Note that this works because caesar_final.py is in the same directory as helpers.py"""
 ```
 
-Now we should be able to use those functions! Try running python ``caesar.py`` again, and you should find that it works just like it did before.
+Now we should be able to use those functions! Try running the unit tests again and you should find that the unit tests in ``test_crypto`` that use ``caesar_final.encrypt()`` pass.
 
 > **Note:** The technique we are using here is a little simpler than the way this is normally done. For larger projects, where the structure is a tree of folders within folders, there is a slightly more involved procedure for reusing code, which does not require both modules to live together in the same folder. If you’re curious, you can read up more about creating modules in Python in the [Python module documentation](https://docs.python.org/3/tutorial/modules.html).
 
-Once you have Caesar working, do the same thing in ``vigenere.py``: simply delete the two helper functions, and import them from ``helpers.py``.
+Once you have Caesar working, do the same thing for Vigenere by copying only the ``encrypt`` method from ``vigenere.py`` into ``vigenere_final.py`` and adding the import statement for ``helpers.py``. 
 
 Now your helper functions are defined only once, and your code remains nice and DRY (Don’t Repeat Yourself)!
 
-At this point, go ahead and run ``pytest --html=report.html`` and check that all tests are passing. Then add and commit your changes and push to GitHub.
+At this point, go ahead and run ``pytest --html=report.html`` and check that **all** tests are passing. Then add and commit your changes and push to GitHub.
 
 ## Part 4: Bonus Missions
 

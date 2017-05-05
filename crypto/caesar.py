@@ -1,11 +1,14 @@
-def alphabet_position(r):
+def alphabet_position(letter):
 # TODO implement your function 
+
     return
 
-def rotate_character(r):
+def rotate_character(char, rot):
 # TODO implement your function 
-    return
 
-def encrypt(r):
+    return 
+
+def encrypt(text, rot):
 # TODO implement your function 
-    return
+
+    return 

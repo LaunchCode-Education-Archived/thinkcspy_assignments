@@ -53,10 +53,10 @@ In order for course staff to be able to view your updated report, you need to do
         ![Source docs](images/docs-source.png)
 
         Save the changes.
-    * In your browser, visit `https://<your-github-username>.github.io/unit-1-assignments-<your-username>/report.html`. You should see the output of your grading report.
+    * In your browser, visit `https://codecamp-stl-may2017.github.io/unit-1-assignments-<your-username>/report.html`. You should see the output of your grading report.
     * Copy the report URL from the previous step, and add it to the top of this file (`README.md`), using the Markdown syntax:
         ```markdown
-        [Grade Report](https://codecamp-stl-may2017.github.io/`unit-1-assignments-<your-username>`/report.html)
+        [Grade Report](https://codecamp-stl-may2017.github.io/unit-1-assignments-<your-username>/report.html)
         ```
 
         Your URL will look something like this:

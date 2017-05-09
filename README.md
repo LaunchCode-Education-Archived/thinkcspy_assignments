@@ -4,7 +4,7 @@ This repository will be used to create and submit your homework solutions. There
 
 ## Set Up Instructions
 
-The repository ``unit-1-assignments-<your-username>`` should be in your GitHub account at this point, and you should have Python installed locally. The steps you'll take to complete your set up are:
+You should have already accepted the assignment via the GitHub Classroom link at learn.launchcode.org, and you should have Python installed locally. The steps you'll take to complete your set up are:
 
 1. Open git bash or a terminal window.
 2. Clone this repository on your computer by using the command ``git clone`` and then the url for your account's repository.
@@ -56,7 +56,12 @@ In order for course staff to be able to view your updated report, you need to do
     * In your browser, visit `https://<your-github-username>.github.io/unit-1-assignments-<your-username>/report.html`. You should see the output of your grading report.
     * Copy the report URL from the previous step, and add it to the top of this file (`README.md`), using the Markdown syntax:
         ```markdown
-        [Grade Report](https://<your-github-username>.github.io/`unit-1-assignments-<your-username>`/report.html)
+        [Grade Report](https://codecamp-stl-may2017.github.io/`unit-1-assignments-<your-username>`/report.html)
+        ```
+
+        Your URL will look something like this:
+        ```nohighlight
+        https://codecamp-stl-may2017.github.io/unit-1-assignments-chrisbay/
         ```
     * After you've done this once, you can skip this step and go to the next for future assignments.
 

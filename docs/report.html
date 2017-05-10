@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Test Report</title>
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function find_all(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sort_column(elem) {
+    toggle_sort_states(elem);
+    var colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    var key;
+    if (elem.classList.contains('numeric')) {
+        key = key_num;
+    } else if (elem.classList.contains('result')) {
+        key = key_result;
+    } else {
+        key = key_alpha;
+    }
+    sort_table(elem, key(colIndex));
+}
+
+function show_all_extras() {
+    find_all('.col-result').forEach(show_extras);
+}
+
+function hide_all_extras() {
+    find_all('.col-result').forEach(hide_extras);
+}
+
+function show_extras(colresult_elem) {
+    var extras = colresult_elem.parentNode.nextElementSibling;
+    var expandcollapse = colresult_elem.firstElementChild;
+    extras.classList.remove("collapsed");
+    expandcollapse.classList.remove("expander");
+    expandcollapse.classList.add("collapser");
+}
+
+function hide_extras(colresult_elem) {
+    var extras = colresult_elem.parentNode.nextElementSibling;
+    var expandcollapse = colresult_elem.firstElementChild;
+    extras.classList.add("collapsed");
+    expandcollapse.classList.remove("collapser");
+    expandcollapse.classList.add("expander");
+}
+
+function show_filters() {
+    var filter_items = document.getElementsByClassName('filter');
+    for (var i = 0; i < filter_items.length; i++)
+        filter_items[i].hidden = false;
+}
+
+function add_collapse() {
+    // Add links for show/hide all
+    var resulttable = find('table#results-table');
+    var showhideall = document.createElement("p");
+    showhideall.innerHTML = '<a href="javascript:show_all_extras()">Show all details</a> / ' +
+                            '<a href="javascript:hide_all_extras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    find_all('.col-result').forEach(function(elem) {
+        var extras = elem.parentNode.nextElementSibling;
+        var expandcollapse = document.createElement("span");
+        if (elem.innerHTML === 'Passed') {
+            extras.classList.add("collapsed");
+            expandcollapse.classList.add("expander");
+        } else {
+            expandcollapse.classList.add("collapser");
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener("click", function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains("collapsed")) {
+                show_extras(event.currentTarget);
+            } else {
+                hide_extras(event.currentTarget);
+            }
+        });
+    })
+}
+
+function init () {
+    reset_sort_headers();
+
+    add_collapse();
+
+    show_filters();
+
+    toggle_sort_states(find('.initial-sort'));
+
+    find_all('.sortable').forEach(function(elem) {
+        elem.addEventListener("click",
+                              function(event) {
+                                  sort_column(elem);
+                              }, false)
+    });
+
+};
+
+function sort_table(clicked, key_func) {
+    var rows = find_all('.results-table-row');
+    var reversed = !clicked.classList.contains('asc');
+    var sorted_rows = sort(rows, key_func, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    var thead = document.getElementById("results-table-head");
+    document.getElementById('results-table').remove();
+    var parent = document.createElement("table");
+    parent.id = "results-table";
+    parent.appendChild(thead);
+    sorted_rows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName("BODY")[0].appendChild(parent);
+}
+
+function sort(items, key_func, reversed) {
+    var sort_array = items.map(function(item, i) {
+        return [key_func(item), i];
+    });
+    var multiplier = reversed ? -1 : 1;
+
+    sort_array.sort(function(a, b) {
+        var key_a = a[0];
+        var key_b = b[0];
+        return multiplier * (key_a >= key_b ? 1 : -1);
+    });
+
+    return sort_array.map(function(item) {
+        var index = item[1];
+        return items[index];
+    });
+}
+
+function key_alpha(col_index) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[col_index].firstChild.data.toLowerCase();
+    };
+}
+
+function key_num(col_index) {
+    return function(elem) {
+        return parseFloat(elem.childNodes[1].childNodes[col_index].firstChild.data);
+    };
+}
+
+function key_result(col_index) {
+    return function(elem) {
+        var strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+                       'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[col_index].firstChild.data);
+    };
+}
+
+function reset_sort_headers() {
+    find_all('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    find_all('.sortable').forEach(function(elem) {
+        var icon = document.createElement("div");
+        icon.className = "sort-icon";
+        icon.textContent = "vvv";
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove("desc", "active");
+        elem.classList.add("asc", "inactive");
+    });
+}
+
+function toggle_sort_states(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        reset_sort_headers();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function is_all_rows_hidden(value) {
+  return value.hidden == false;
+}
+
+function filter_table(elem) {
+    var outcome_att = "data-test-result";
+    var outcome = elem.getAttribute(outcome_att);
+    class_outcome = outcome + " results-table-row";
+    var outcome_rows = document.getElementsByClassName(class_outcome);
+
+    for(var i = 0; i < outcome_rows.length; i++){
+        outcome_rows[i].hidden = !elem.checked;
+    }
+
+    var rows = find_all('.results-table-row').filter(is_all_rows_hidden);
+    var all_rows_hidden = rows.length == 0 ? true : false;
+    var not_found_message = document.getElementById("not-found-message");
+    not_found_message.hidden = !all_rows_hidden;
+}
+</script>
+    <p>Report generated on 09-May-2017 at 07:33:05 by<a href="https://pypi.python.org/pypi/pytest-html"> pytest-html</a> v1.14.2</p>
+    <h2>Environment</h2>
+    <table id="environment">
+      <tr>
+        <td>Packages</td>
+        <td>{&apos;pytest&apos;: &apos;3.0.7&apos;, &apos;py&apos;: &apos;1.4.33&apos;, &apos;pluggy&apos;: &apos;0.4.0&apos;}</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>Darwin-16.5.0-x86_64-i386-64bit</td></tr>
+      <tr>
+        <td>Plugins</td>
+        <td>{&apos;html&apos;: &apos;1.14.2&apos;, &apos;metadata&apos;: &apos;1.3.0&apos;}</td></tr>
+      <tr>
+        <td>Python</td>
+        <td>3.6.0</td></tr></table>
+    <h2>Summary</h2>
+    <p>77 tests ran in 0.56 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="passed">1 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="failed">76 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" col="chapter">Chapter</th>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable numeric" col="duration">Duration</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_03.test_solution.TestChapter03 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(calculate_temp(49), 89)<br/><br/>Chapter_03/test_solution.py:8: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>num_clicks = 49<br/><br/>    def calculate_temp(num_clicks):<br/>    # TODO calculate the temperature (use the variable name of temp)<br/>    <br/>&gt;       return temp<br/><span class="error">E       NameError: name &#x27;temp&#x27; is not defined</span><br/><br/>Chapter_03/solution.py:4: NameError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_2</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_03.test_solution.TestChapter03 testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(calculate_temp(50), 40)<br/><br/>Chapter_03/test_solution.py:11: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>num_clicks = 50<br/><br/>    def calculate_temp(num_clicks):<br/>    # TODO calculate the temperature (use the variable name of temp)<br/>    <br/>&gt;       return temp<br/><span class="error">E       NameError: name &#x27;temp&#x27; is not defined</span><br/><br/>Chapter_03/solution.py:4: NameError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_03.test_solution.TestChapter03 testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(calculate_temp(0), 40)<br/><br/>Chapter_03/test_solution.py:14: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>num_clicks = 0<br/><br/>    def calculate_temp(num_clicks):<br/>    # TODO calculate the temperature (use the variable name of temp)<br/>    <br/>&gt;       return temp<br/><span class="error">E       NameError: name &#x27;temp&#x27; is not defined</span><br/><br/>Chapter_03/solution.py:4: NameError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_03.test_solution.TestChapter03 testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(calculate_temp(201), 41)<br/><br/>Chapter_03/test_solution.py:17: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>num_clicks = 201<br/><br/>    def calculate_temp(num_clicks):<br/>    # TODO calculate the temperature (use the variable name of temp)<br/>    <br/>&gt;       return temp<br/><span class="error">E       NameError: name &#x27;temp&#x27; is not defined</span><br/><br/>Chapter_03/solution.py:4: NameError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_03</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_03/test_solution.py::TestChapter03::test_solution_5</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_03.test_solution.TestChapter03 testMethod=test_solution_5&gt;<br/><br/>    def test_solution_5(self):<br/>&gt;       self.assertEqual(calculate_temp(-1), 89)<br/><br/>Chapter_03/test_solution.py:20: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>num_clicks = -1<br/><br/>    def calculate_temp(num_clicks):<br/>    # TODO calculate the temperature (use the variable name of temp)<br/>    <br/>&gt;       return temp<br/><span class="error">E       NameError: name &#x27;temp&#x27; is not defined</span><br/><br/>Chapter_03/solution.py:4: NameError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_04</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_04/test_solution.py::TestChapter04::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_04.test_solution.TestChapter04 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(square([2, 3, 4, 6, 9, 10, 15, 20]), [4, 9, 16, 36, 81, 100, 225, 400])<br/><span class="error">E       AssertionError: Lists differ: [] != [4, 9, 16, 36, 81, 100, 225, 400]</span><br/><span class="error">E       </span><br/><span class="error">E       Second list contains 8 additional elements.</span><br/><span class="error">E       First extra element 0:</span><br/><span class="error">E       4</span><br/><span class="error">E       </span><br/><span class="error">E       - []</span><br/><span class="error">E       + [4, 9, 16, 36, 81, 100, 225, 400]</span><br/><br/>Chapter_04/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_05</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_05/test_solution.py::TestChapter05::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_05.test_solution.TestChapter05 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(area_of_circle(0), 0)<br/><span class="error">E       AssertionError: None != 0</span><br/><br/>Chapter_05/test_solution.py:8: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_05</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_05/test_solution.py::TestChapter05::test_solution_2</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_05.test_solution.TestChapter05 testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(area_of_circle(1), math.pi)<br/><span class="error">E       AssertionError: None != 3.141592653589793</span><br/><br/>Chapter_05/test_solution.py:11: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_05</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_05/test_solution.py::TestChapter05::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_05.test_solution.TestChapter05 testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(area_of_circle(100), 31415.926535897932)<br/><span class="error">E       AssertionError: None != 31415.926535897932</span><br/><br/>Chapter_05/test_solution.py:14: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_05</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_05/test_solution.py::TestChapter05::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_05.test_solution.TestChapter05 testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(area_of_circle(-1), math.pi)<br/><span class="error">E       AssertionError: None != 3.141592653589793</span><br/><br/>Chapter_05/test_solution.py:17: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_05</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_05/test_solution.py::TestChapter05::test_solution_5</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_05.test_solution.TestChapter05 testMethod=test_solution_5&gt;<br/><br/>    def test_solution_5(self):<br/>&gt;       self.assertEqual(area_of_circle(-5), 25 * math.pi)<br/><span class="error">E       AssertionError: None != 78.53981633974483</span><br/><br/>Chapter_05/test_solution.py:20: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_06</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_06/test_solution.py::TestChapter06::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_06.test_solution.TestChapter06 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(is_Leap(1944), True)<br/><span class="error">E       AssertionError: None != True</span><br/><br/>Chapter_06/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_06</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_06/test_solution.py::TestChapter06::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_06.test_solution.TestChapter06 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(is_Leap(2011), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_06/test_solution.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_06</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_06/test_solution.py::TestChapter06::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_06.test_solution.TestChapter06 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>&gt;       self.assertEqual(is_Leap(1986), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_06/test_solution.py:13: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_06</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_06/test_solution.py::TestChapter06::test_solution_04</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_06.test_solution.TestChapter06 testMethod=test_solution_04&gt;<br/><br/>    def test_solution_04(self):<br/>&gt;       self.assertEqual(is_Leap(1956), True)<br/><span class="error">E       AssertionError: None != True</span><br/><br/>Chapter_06/test_solution.py:16: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_06</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_06/test_solution.py::TestChapter06::test_solution_05</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_06.test_solution.TestChapter06 testMethod=test_solution_05&gt;<br/><br/>    def test_solution_05(self):<br/>&gt;       self.assertEqual(is_Leap(1800), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_06/test_solution.py:19: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_06</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_06/test_solution.py::TestChapter06::test_solution_06</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_06.test_solution.TestChapter06 testMethod=test_solution_06&gt;<br/><br/>    def test_solution_06(self):<br/>&gt;       self.assertEqual(is_Leap(1600), True)<br/><span class="error">E       AssertionError: None != True</span><br/><br/>Chapter_06/test_solution.py:22: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(is_prime(1), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_07/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(is_prime(5), True)<br/><span class="error">E       AssertionError: None != True</span><br/><br/>Chapter_07/test_solution.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>&gt;       self.assertEqual(is_prime(8), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_07/test_solution.py:13: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution_04</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution_04&gt;<br/><br/>    def test_solution_04(self):<br/>&gt;       self.assertEqual(is_prime(199), True)<br/><span class="error">E       AssertionError: None != True</span><br/><br/>Chapter_07/test_solution.py:16: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution_05</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution_05&gt;<br/><br/>    def test_solution_05(self):<br/>&gt;       self.assertEqual(is_prime(144), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_07/test_solution.py:19: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution_06</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution_06&gt;<br/><br/>    def test_solution_06(self):<br/>&gt;       self.assertEqual(is_prime(2), True)<br/><span class="error">E       AssertionError: None != True</span><br/><br/>Chapter_07/test_solution.py:22: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_07</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_07/test_solution.py::TestChapter07::test_solution_07</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_07.test_solution.TestChapter07 testMethod=test_solution_07&gt;<br/><br/>    def test_solution_07(self):<br/>&gt;       self.assertEqual(is_prime(-19), False)<br/><span class="error">E       AssertionError: None != False</span><br/><br/>Chapter_07/test_solution.py:25: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_08</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_08/test_solution.py::TestChapter08::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_08.test_solution.TestChapter08 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>        text = &quot;Eeeee&quot;<br/>        answer = &quot;The text contains 5 alphabetic characters, of which 5 (100.0%) are &#x27;e&#x27;.&quot;<br/>&gt;       self.assertEqual(analyze_text(text), answer)<br/><span class="error">E       AssertionError: None != &quot;The text contains 5 alphabetic characters, of which 5 (100.0%) are &#x27;e&#x27;.&quot;</span><br/><br/>Chapter_08/test_solution.py:9: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_08</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_08/test_solution.py::TestChapter08::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_08.test_solution.TestChapter08 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>        text = &quot;Blueberries are tastey!&quot;<br/>        answer = &quot;The text contains 20 alphabetic characters, of which 5 (25.0%) are &#x27;e&#x27;.&quot;<br/>&gt;       self.assertEqual(analyze_text(text), answer)<br/><span class="error">E       AssertionError: None != &quot;The text contains 20 alphabetic characters, of which 5 (25.0%) are &#x27;e&#x27;.&quot;</span><br/><br/>Chapter_08/test_solution.py:14: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_08</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_08/test_solution.py::TestChapter08::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_08.test_solution.TestChapter08 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>        text = &quot;Wright&#x27;s book, Gadsby, contains a total of 0 of that most common symbol ;)&quot;<br/>        answer = &quot;The text contains 55 alphabetic characters, of which 0 (0.0%) are &#x27;e&#x27;.&quot;<br/>&gt;       self.assertEqual(analyze_text(text), answer)<br/><span class="error">E       AssertionError: None != &quot;The text contains 55 alphabetic characters, of which 0 (0.0%) are &#x27;e&#x27;.&quot;</span><br/><br/>Chapter_08/test_solution.py:19: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_09</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_09/test_solution.py::TestChapter09::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_09.test_solution.TestChapter09 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(mirror(&quot;good&quot;), &quot;gooddoog&quot;)<br/><span class="error">E       AssertionError: None != &#x27;gooddoog&#x27;</span><br/><br/>Chapter_09/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_09</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_09/test_solution.py::TestChapter09::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_09.test_solution.TestChapter09 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(mirror(&quot;Python&quot;), &quot;PythonnohtyP&quot;)<br/><span class="error">E       AssertionError: None != &#x27;PythonnohtyP&#x27;</span><br/><br/>Chapter_09/test_solution.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_09</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_09/test_solution.py::TestChapter09::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_09.test_solution.TestChapter09 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>&gt;       self.assertEqual(mirror(&quot;&quot;), &quot;&quot;)<br/><span class="error">E       AssertionError: None != &#x27;&#x27;</span><br/><br/>Chapter_09/test_solution.py:13: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_09</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_09/test_solution.py::TestChapter09::test_solution_04</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_09.test_solution.TestChapter09 testMethod=test_solution_04&gt;<br/><br/>    def test_solution_04(self):<br/>&gt;       self.assertEqual(mirror(&quot;act&quot;), &quot;ACTTCA&quot;)<br/><span class="error">E       AssertionError: None != &#x27;ACTTCA&#x27;</span><br/><br/>Chapter_09/test_solution.py:16: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_10</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_10/test_solution.py::TestChapter10::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_10.test_solution.TestChapter10 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(find_average([19,3,1,8,13]), 8)<br/><span class="error">E       AssertionError: None != 8</span><br/><br/>Chapter_10/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_10</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_10/test_solution.py::TestChapter10::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_10.test_solution.TestChapter10 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(find_average([0,7,3,4,5,13,1]), 4)<br/><span class="error">E       AssertionError: None != 4</span><br/><br/>Chapter_10/test_solution.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_10</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_10/test_solution.py::TestChapter10::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_10.test_solution.TestChapter10 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>&gt;       self.assertEqual(find_average([120,30,50]), 50)<br/><span class="error">E       AssertionError: None != 50</span><br/><br/>Chapter_10/test_solution.py:13: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_11</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_11/test_solution.py::TestChapter11::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_11.test_solution.TestChapter11 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(get_country_codes(&quot;NZ$300, KR$1200, DK$5&quot;), &quot;NZ, KR, DK&quot;)<br/><span class="error">E       AssertionError: None != &#x27;NZ, KR, DK&#x27;</span><br/><br/>Chapter_11/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_11</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_11/test_solution.py::TestChapter11::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_11.test_solution.TestChapter11 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(get_country_codes(&quot;US$40, AU$89, JP$200&quot;), &quot;US, AU, JP&quot;)<br/><span class="error">E       AssertionError: None != &#x27;US, AU, JP&#x27;</span><br/><br/>Chapter_11/test_solution.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_11</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_11/test_solution.py::TestChapter11::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_11.test_solution.TestChapter11 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>&gt;       self.assertEqual(get_country_codes(&quot;AU$23, NG$900, MX$200, BG$790, ES$2&quot;), &quot;AU, NG, MX, BG, ES&quot;)<br/><span class="error">E       AssertionError: None != &#x27;AU, NG, MX, BG, ES&#x27;</span><br/><br/>Chapter_11/test_solution.py:13: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_11</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_11/test_solution.py::TestChapter11::test_solution_04</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_11.test_solution.TestChapter11 testMethod=test_solution_04&gt;<br/><br/>    def test_solution_04(self):<br/>&gt;       self.assertEqual(get_country_codes(&quot;CA$40&quot;), &quot;CA&quot;)<br/><span class="error">E       AssertionError: None != &#x27;CA&#x27;</span><br/><br/>Chapter_11/test_solution.py:16: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_13.test_solution.TestChapter13 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(Point(4, 10).slope_from_origin(), 2.5)<br/><span class="error">E       AssertionError: None != 2.5</span><br/><br/>Chapter_13/test_solution.py:7: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_13.test_solution.TestChapter13 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(Point(5, 10).slope_from_origin(), 2)<br/><span class="error">E       AssertionError: None != 2</span><br/><br/>Chapter_13/test_solution.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution_04</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_13.test_solution.TestChapter13 testMethod=test_solution_04&gt;<br/><br/>    def test_solution_04(self):<br/>&gt;       self.assertEqual(Point(20, 20).slope_from_origin(), 1)<br/><span class="error">E       AssertionError: None != 1</span><br/><br/>Chapter_13/test_solution.py:16: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution_05</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_13.test_solution.TestChapter13 testMethod=test_solution_05&gt;<br/><br/>    def test_solution_05(self):<br/>&gt;       self.assertEqual(Point(4, -10).slope_from_origin(), -2.5)<br/><span class="error">E       AssertionError: None != -2.5</span><br/><br/>Chapter_13/test_solution.py:19: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution_06</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_13.test_solution.TestChapter13 testMethod=test_solution_06&gt;<br/><br/>    def test_solution_06(self):<br/>&gt;       self.assertEqual(Point(-4, -10).slope_from_origin(), 2.5)<br/><span class="error">E       AssertionError: None != 2.5</span><br/><br/>Chapter_13/test_solution.py:22: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution_07</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_13.test_solution.TestChapter13 testMethod=test_solution_07&gt;<br/><br/>    def test_solution_07(self):<br/>&gt;       self.assertEqual(Point(-6, 0).slope_from_origin(), 0)<br/><span class="error">E       AssertionError: None != 0</span><br/><br/>Chapter_13/test_solution.py:25: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_14</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_14/test_solution.py::TestChapter14::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_14.test_solution.TestChapter14 testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(BoredChatbot(&quot;Tom&quot;).response(&quot;Hello World&quot;), &quot;It is very interesting that you say: &#x27;Hello World&#x27;&quot;)<br/><span class="error">E       TypeError: object() takes no parameters</span><br/><br/>Chapter_14/test_solution.py:7: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_14</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_14/test_solution.py::TestChapter14::test_solution_02</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_14.test_solution.TestChapter14 testMethod=test_solution_02&gt;<br/><br/>    def test_solution_02(self):<br/>&gt;       self.assertEqual(BoredChatbot(&quot;Tom&quot;).response(&quot;&quot;), &quot;It is very interesting that you say: &#x27;&#x27;&quot;)<br/><span class="error">E       TypeError: object() takes no parameters</span><br/><br/>Chapter_14/test_solution.py:10: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_14</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_14/test_solution.py::TestChapter14::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_14.test_solution.TestChapter14 testMethod=test_solution_03&gt;<br/><br/>    def test_solution_03(self):<br/>&gt;       self.assertEqual(BoredChatbot(&quot;Tom&quot;).response(&quot;Humpty Dumpty sat on a wall. Humpty Dumpty had a great fall.&quot; +<br/>                        &quot;All the king&#x27;s horses and all the king&#x27;s men...&quot;), &quot;zzz... Oh excuse me, I dozed off reading your essay.&quot;)<br/><span class="error">E       TypeError: object() takes no parameters</span><br/><br/>Chapter_14/test_solution.py:13: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>Chapter_14</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">Chapter_14/test_solution.py::TestChapter14::test_solution_04</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.Chapter_14.test_solution.TestChapter14 testMethod=test_solution_04&gt;<br/><br/>    def test_solution_04(self):<br/>&gt;       self.assertEqual(BoredChatbot(&quot;Tom&quot;).response(&quot;What&#x27;s up?&quot;), &quot;It is very interesting that you say: &#x27;What&#x27;s up?&#x27;&quot;)<br/><span class="error">E       TypeError: object() takes no parameters</span><br/><br/>Chapter_14/test_solution.py:17: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(alphabet_position(&quot;a&quot;), 0)<br/><span class="error">E       AssertionError: None != 0</span><br/><br/>crypto/test_caesar.py:9: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_2</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(alphabet_position(&quot;Y&quot;), 24)<br/><span class="error">E       AssertionError: None != 24</span><br/><br/>crypto/test_caesar.py:12: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(rotate_character(&quot;a&quot;, 13), &quot;n&quot;)<br/><span class="error">E       AssertionError: None != &#x27;n&#x27;</span><br/><br/>crypto/test_caesar.py:15: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(rotate_character(&quot;!&quot;, 45), &quot;!&quot;)<br/><span class="error">E       AssertionError: None != &#x27;!&#x27;</span><br/><br/>crypto/test_caesar.py:18: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_5</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_5&gt;<br/><br/>    def test_solution_5(self):<br/>&gt;       self.assertEqual(rotate_character(&quot;C&quot;, 27), &quot;D&quot;)<br/><span class="error">E       AssertionError: None != &#x27;D&#x27;</span><br/><br/>crypto/test_caesar.py:21: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_6</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_6&gt;<br/><br/>    def test_solution_6(self):<br/>&gt;       self.assertEqual(rotate_character(&quot;z&quot;, 37), &quot;k&quot;)<br/><span class="error">E       AssertionError: None != &#x27;k&#x27;</span><br/><br/>crypto/test_caesar.py:24: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_7</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_7&gt;<br/><br/>    def test_solution_7(self):<br/>&gt;       self.assertEqual(encrypt(&quot;a&quot;, 13), &quot;n&quot;)<br/><span class="error">E       AssertionError: None != &#x27;n&#x27;</span><br/><br/>crypto/test_caesar.py:27: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_8</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_8&gt;<br/><br/>    def test_solution_8(self):<br/>&gt;       self.assertEqual(encrypt(&quot;LaunchCode&quot;, 13), &quot;YnhapuPbqr&quot;)<br/><span class="error">E       AssertionError: None != &#x27;YnhapuPbqr&#x27;</span><br/><br/>crypto/test_caesar.py:30: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_caesar.py::TestCaesar::test_solution_9</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_caesar.TestCaesar testMethod=test_solution_9&gt;<br/><br/>    def test_solution_9(self):<br/>&gt;       self.assertEqual(encrypt(&quot;Hello, World!&quot;, 5), &quot;Mjqqt, Btwqi!&quot;)<br/><span class="error">E       AssertionError: None != &#x27;Mjqqt, Btwqi!&#x27;</span><br/><br/>crypto/test_caesar.py:33: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_crypto.py::TestCrypto::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_crypto.TestCrypto testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(caesar_final.encrypt(&quot;a&quot;, 13), &quot;n&quot;)<br/><span class="error">E       AssertionError: None != &#x27;n&#x27;</span><br/><br/>crypto/test_crypto.py:10: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_crypto.py::TestCrypto::test_solution_2</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_crypto.TestCrypto testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(caesar_final.encrypt(&quot;LaunchCode&quot;, 13), &quot;YnhapuPbqr&quot;)<br/><span class="error">E       AssertionError: None != &#x27;YnhapuPbqr&#x27;</span><br/><br/>crypto/test_crypto.py:13: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_crypto.py::TestCrypto::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_crypto.TestCrypto testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(caesar_final.encrypt(&quot;Hello, World!&quot;, 5), &quot;Mjqqt, Btwqi!&quot;)<br/><span class="error">E       AssertionError: None != &#x27;Mjqqt, Btwqi!&#x27;</span><br/><br/>crypto/test_crypto.py:16: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_crypto.py::TestCrypto::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_crypto.TestCrypto testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(vigenere_final.encrypt(&quot;The crow flies at midnight!&quot;, &quot;boom&quot;), &quot;Uvs osck rmwse bh auebwsih!&quot;)<br/><span class="error">E       AssertionError: None != &#x27;Uvs osck rmwse bh auebwsih!&#x27;</span><br/><br/>crypto/test_crypto.py:19: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_crypto.py::TestCrypto::test_solution_5</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_crypto.TestCrypto testMethod=test_solution_5&gt;<br/><br/>    def test_solution_5(self):<br/>&gt;       self.assertEqual(vigenere_final.encrypt(&quot;The crow flies at midnight!&quot;, &quot;LaunchCode&quot;), &quot;Ehy ptvy tomps ug opfblkst!&quot;)<br/><span class="error">E       AssertionError: None != &#x27;Ehy ptvy tomps ug opfblkst!&#x27;</span><br/><br/>crypto/test_crypto.py:22: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_crypto.py::TestCrypto::test_solution_6</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_crypto.TestCrypto testMethod=test_solution_6&gt;<br/><br/>    def test_solution_6(self):<br/>&gt;       self.assertEqual(vigenere_final.encrypt(&quot;Wow. This TOTALLY rocks: #CodingRocks&quot;, &quot;enthusiasm&quot;), &quot;Abp. Abaa TGFEYEF lgkkk: #OsqbuaJwcce&quot;)<br/><span class="error">E       AssertionError: None != &#x27;Abp. Abaa TGFEYEF lgkkk: #OsqbuaJwcce&#x27;</span><br/><br/>crypto/test_crypto.py:25: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(alphabet_position(&quot;b&quot;), 1)<br/><span class="error">E       AssertionError: None != 1</span><br/><br/>crypto/test_vigenere.py:9: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_2</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(alphabet_position(&quot;C&quot;), 2)<br/><span class="error">E       AssertionError: None != 2</span><br/><br/>crypto/test_vigenere.py:12: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(alphabet_position(&quot;Z&quot;), 25)<br/><span class="error">E       AssertionError: None != 25</span><br/><br/>crypto/test_vigenere.py:15: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(rotate_character(&quot; &quot;, 45), &quot; &quot;)<br/><span class="error">E       AssertionError: None != &#x27; &#x27;</span><br/><br/>crypto/test_vigenere.py:18: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_5</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_5&gt;<br/><br/>    def test_solution_5(self):<br/>&gt;       self.assertEqual(rotate_character(&quot;A&quot;, 14), &quot;O&quot;)<br/><span class="error">E       AssertionError: None != &#x27;O&#x27;</span><br/><br/>crypto/test_vigenere.py:21: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_6</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_6&gt;<br/><br/>    def test_solution_6(self):<br/>&gt;       self.assertEqual(rotate_character(&quot;z&quot;, 52), &quot;z&quot;)<br/><span class="error">E       AssertionError: None != &#x27;z&#x27;</span><br/><br/>crypto/test_vigenere.py:24: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_7</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_7&gt;<br/><br/>    def test_solution_7(self):<br/>&gt;       self.assertEqual(encrypt(&quot;The crow flies at midnight!&quot;, &quot;boom&quot;), &quot;Uvs osck rmwse bh auebwsih!&quot;)<br/><span class="error">E       TypeError: encrypt() takes 0 positional arguments but 2 were given</span><br/><br/>crypto/test_vigenere.py:27: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_8</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_8&gt;<br/><br/>    def test_solution_8(self):<br/>&gt;       self.assertEqual(encrypt(&quot;The crow flies at midnight!&quot;, &quot;LaunchCode&quot;), &quot;Ehy ptvy tomps ug opfblkst!&quot;)<br/><span class="error">E       TypeError: encrypt() takes 0 positional arguments but 2 were given</span><br/><br/>crypto/test_vigenere.py:30: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>crypto</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">crypto/test_vigenere.py::TestVigenere::test_solution_9</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.crypto.test_vigenere.TestVigenere testMethod=test_solution_9&gt;<br/><br/>    def test_solution_9(self):<br/>&gt;       self.assertEqual(encrypt(&quot;Wow. This TOTALLY rocks: #CodingRocks&quot;, &quot;enthusiasm&quot;), &quot;Abp. Abaa TGFEYEF lgkkk: #OsqbuaJwcce&quot;)<br/><span class="error">E       TypeError: encrypt() takes 0 positional arguments but 2 were given</span><br/><br/>crypto/test_vigenere.py:33: TypeError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>initials</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">initials/test_solution.py::TestInitials::test_solution</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.initials.test_solution.TestInitials testMethod=test_solution&gt;<br/><br/>    def test_solution(self):<br/>&gt;       self.assertEqual(get_initials(&quot;Ozzie Smith&quot;), &quot;OS&quot;)<br/><span class="error">E       AssertionError: None != &#x27;OS&#x27;</span><br/><br/>initials/test_solution.py:8: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>initials</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">initials/test_solution.py::TestInitials::test_solution_2</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.initials.test_solution.TestInitials testMethod=test_solution_2&gt;<br/><br/>    def test_solution_2(self):<br/>&gt;       self.assertEqual(get_initials(&quot;Bonnie blair&quot;), &quot;BB&quot;)<br/><span class="error">E       AssertionError: None != &#x27;BB&#x27;</span><br/><br/>initials/test_solution.py:11: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>initials</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">initials/test_solution.py::TestInitials::test_solution_3</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.initials.test_solution.TestInitials testMethod=test_solution_3&gt;<br/><br/>    def test_solution_3(self):<br/>&gt;       self.assertEqual(get_initials(&quot;George&quot;), &quot;G&quot;)<br/><span class="error">E       AssertionError: None != &#x27;G&#x27;</span><br/><br/>initials/test_solution.py:14: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td>initials</td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">initials/test_solution.py::TestInitials::test_solution_4</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;thinkcspy_assignments.initials.test_solution.TestInitials testMethod=test_solution_4&gt;<br/><br/>    def test_solution_4(self):<br/>&gt;       self.assertEqual(get_initials(&quot;Daniel day Lewis&quot;), &quot;DDL&quot;)<br/><span class="error">E       AssertionError: None != &#x27;DDL&#x27;</span><br/><br/>initials/test_solution.py:17: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td>Chapter_13</td>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Chapter_13/test_solution.py::TestChapter13::test_solution_03</td>
+          <td class="col-duration">0.00</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody></table></body></html>

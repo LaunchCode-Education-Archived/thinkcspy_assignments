@@ -22,6 +22,9 @@ class TestChapter07(unittest.TestCase):
         self.assertEqual(is_prime(2), True) 
 
     def test_solution_07(self):
-        self.assertEqual(is_prime(-19), False) 
+        self.assertEqual(is_prime(-19), False)
+
+    def test_solution_08(self):
+        self.assertEqual(is_prime(121), False) 
     		
     	
